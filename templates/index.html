@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Encryption/Decryption</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1e22;
+            color: #f8f9fa;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            background-color: #2a2d34;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px; /* Reduced max-width for compactness */
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            display: flex;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #3a3d43;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            justify-content: space-around;
+        }
+
+        .tab.active {
+            background-color: #4CAF50;
+        }
+
+        h2 {
+            margin-top: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+            font-size: 1.2em; /* Slightly smaller font size */
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        input[type="file"],
+        select,
+        button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #3a3d43; /* Darker background for inputs */
+            color: #f8f9fa; /* Light text color */
+            font-size: 14px; /* Smaller font size */
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .form-section {
+            display: none; /* Hide all sections by default */
+        }
+
+        #result,
+        #error,
+        #decrypt-result,
+        #decrypt-error {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        #error {
+            color: red;
+        }
+
+        #result,
+        #decrypt-result {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>File Encryption/Decryption</h1>
+
+        <div class="tab" id="encrypt-tab">Encrypt</div>
+        <div class="tab" id="decrypt-tab">Decrypt</div>
+
+        <form id="encrypt-form" enctype="multipart/form-data" class="form-section">
+            <h2>Encrypt</h2>
+            <label for="encrypt-file">File:</label>
+            <input type="file" name="file" id="encrypt-file" required>
+            <label for="encrypt-algorithm">Algorithm:</label>
+            <select name="algorithm" id="encrypt-algorithm">
+                <option value="fernet">Fernet</option>
+                <option value="aes">AES</option>
+            </select>
+            <button type="submit">Encrypt</button>
+            <p id="result"></p>
+            <p id="error"></p>
+        </form>
+
+        <form id="decrypt-form" enctype="multipart/form-data" class="form-section">
+            <h2>Decrypt</h2>
+            <label for="decrypt-file">File:</label>
+            <input type="file" name="file" id="decrypt-file" required>
+            <label for="decrypt-key">Key File:</label>
+            <input type="file" name="key" id="decrypt-key" required>
+            <label for="decrypt-algorithm">Algorithm:</label>
+            <select name="algorithm" id="decrypt-algorithm">
+                <option value="fernet">Fernet</option>
+                <option value="aes">AES</option>
+            </select>
+            <button type="submit">Decrypt</button>
+            <p id="decrypt-result"></p>
+            <p id="decrypt-error"></p>
+        </form>
+    </div>
+
+    <script>
+        // Show the encrypt form by default
+        document.getElementById('encrypt-form').style.display = 'block';
+        document.getElementById('encrypt-tab').classList.add('active');
+
+        document.getElementById('encrypt-tab').onclick = function () {
+            document.getElementById('encrypt-form').style.display = 'block';
+            document.getElementById('decrypt-form').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('decrypt-tab').classList.remove('active');
+        };
+
+        document.getElementById('decrypt-tab').onclick = function () {
+            document.getElementById('decrypt-form').style.display = 'block';
+            document.getElementById('encrypt-form').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('encrypt-tab').classList.remove('active');
+        };
+
+        document.getElementById("encrypt-form").onsubmit = async function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            document.getElementById("error").textContent = result.error ? result.error : '';
+            document.getElementById("result").textContent = result.error ? '' : result.message;
+        };
+
+        document.getElementById("decrypt-form").onsubmit = async function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            document.getElementById("decrypt-error").textContent = result.error ? result.error : '';
+            document.getElementById("decrypt-result").textContent = result.error ? '' : result.message;
+        };
+    </script>
+</body>
+</html>
